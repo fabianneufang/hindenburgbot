@@ -1,3 +1,5 @@
-/usr/local/bin/docker-compose build
-/usr/local/bin/docker-compose down
-/usr/local/bin/docker-compose up -d
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/lib/jvm/java-16-oracle/bin:/usr/lib/jvm/java-16-oracle/db/bin
+
+docker-compose build
+docker-compose down
+docker-compose up -d
