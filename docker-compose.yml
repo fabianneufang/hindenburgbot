@@ -1,0 +1,36 @@
+# use this for standard usage and development.
+
+version: '3.3'
+
+services:
+  hindenburg:
+    container_name: hindenburg
+    build: .
+    restart: unless-stopped
+    environment:
+      - DATABASE_URI=mongodb://db/hindenburg
+      - API_URI=http://manager:4100
+    volumes:
+      - ./logs/hindenburg:/app/logs
+    depends_on:
+      - manager
+      - db
+  manager:
+    container_name: hindenburg-manager
+    build: .
+    restart: always
+    command: ["npm", "run", "manager"]
+    environment:
+      - DATABASE_URI=mongodb://db/hindenburg
+    volumes:
+      - ./logs/manager:/app/logs
+    ports:
+      - 4100:4100
+    depends_on:
+      - db
+  db:
+    container_name: hindenburg-db
+    image: mongo:4
+    restart: always
+    volumes:
+      - ./database:/data/db
