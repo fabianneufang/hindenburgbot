@@ -2,4 +2,5 @@
 /build/
 /database/
 /logs/
+/.idea/
 /.env
