@@ -4,3 +4,5 @@
 /logs/
 /.idea/
 /.env
+/.DS_Store
+/build.log
