@@ -2,6 +2,7 @@
 /build/
 /database/
 /logs/
+/redis/
 /.idea/
 /.env
 /.DS_Store

@@ -15,6 +15,7 @@ services:
     depends_on:
       - manager
       - db
+      - redis
   manager:
     container_name: hindenburg-manager
     build: .
@@ -28,9 +29,21 @@ services:
       - 4100:4100
     depends_on:
       - db
+      - redis
   db:
     container_name: hindenburg-db
     image: mongo:4
     restart: always
     volumes:
       - ./database:/data/db
+  redis:
+    container_name: hindenburg-redis
+    image: docker.io/bitnami/redis:6.2
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    restart: always
+    volumes:
+      - ./redis:/bitnami/redis/data
+    ports:
+      - '6379:6379'

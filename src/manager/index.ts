@@ -7,6 +7,8 @@ import express from "express";
 import { expressLogger } from "../utils/logger/express";
 import { inspect } from "util";
 import { managerLogger } from "../utils/logger/manager";
+import {redis} from "../redis";
+
 
 const app = express();
 app.use(expressLogger);
@@ -26,6 +28,11 @@ app.get("/", (_req, res) => {
     lastUpdate: Date.now(),
   } as ManagerStatus);
 });
+
+app.get("/redis", async (req, res) => {
+  await redis.publish("test", Math.random().toString());
+  res.status(200).send("OK");
+})
 
 if (config.apiPort) app.listen(config.apiPort, () => managerLogger.info(`Webserver listening on port ${config.apiPort}.`));
 else throw new Error("Manager has no port to listen to.");

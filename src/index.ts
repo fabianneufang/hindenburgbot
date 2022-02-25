@@ -12,6 +12,7 @@ import { inviteUrl } from "./constants/links";
 import messageCommandHandler from "./handlers/messageCommands";
 import { postStats } from "./utils/cluster/stats";
 import prepareGuild from "./handlers/prepareGuild";
+import {redis} from "./redis";
 
 const client = new Client({
   partials: ["USER", "CHANNEL", "GUILD_MEMBER", "MESSAGE", "REACTION"],
@@ -29,6 +30,18 @@ const client = new Client({
   ],
   shards: config.cluster.shards,
   shardCount: config.cluster.shardCount,
+});
+
+redis.subscribe("test", (err, msg) => {
+  if (err) {
+    console.error(err);
+  } else {
+    console.log(msg)
+  }
+})
+
+redis.on("message", (channel, message) => {
+  console.log(`Received ${message} from ${channel}`);
 });
 
 let disabledGuilds = new Set();
