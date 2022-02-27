@@ -1,4 +1,18 @@
-import { ApplicationCommandData, ApplicationCommandOption, ApplicationCommandOptionData, ApplicationCommandSubCommandData, ButtonInteraction, ChatInputApplicationCommandData, Client, CommandInteraction, ContextMenuInteraction, MessageApplicationCommandData, SelectMenuInteraction, UserApplicationCommandData } from "discord.js";
+import {
+  ApplicationCommandData,
+  ApplicationCommandDataResolvable,
+  ApplicationCommandOption,
+  ApplicationCommandOptionData,
+  ApplicationCommandSubCommandData,
+  ButtonInteraction,
+  ChatInputApplicationCommandData,
+  Client,
+  CommandInteraction,
+  ContextMenuInteraction,
+  MessageApplicationCommandData,
+  SelectMenuInteraction,
+  UserApplicationCommandData
+} from "discord.js";
 import autocompleteHandler from "./autocompletes";
 import commandHandler from "./commands";
 import componentHandler from "./components";
@@ -8,11 +22,22 @@ import { hindenburgLogger } from "../../utils/logger/hindenburg";
 import fs from "fs";
 import { get } from "../../database/guilds";
 import { join } from "path";
+import { catalog } from "../../guilds/catalog";
 
 export default async (client: Client): Promise<void> => {
   const commands = config.guild ? client.guilds.cache.get(config.guild)?.commands : client.application?.commands;
   if (config.cluster.shards.includes(0)) {
     commands?.set([...await nestCommands("../../commands/slash", "CHAT_INPUT") as Array<ApplicationCommandData>, ...await nestCommands("../../commands/user", "USER") as Array<ApplicationCommandData>]);
+
+    for (const guild in catalog) {
+      const guildCommands = client.guilds.cache.get(catalog[guild])?.commands;
+      let commandsToPush: (ApplicationCommandDataResolvable)[] = [];
+      if (fs.existsSync(join(__dirname, `../../guilds/${catalog[guild]}/commands/slash`)))
+        commandsToPush = [...commandsToPush, ...await nestCommands(`../../guilds/${catalog[guild]}/commands/slash`, "CHAT_INPUT") as Array<ApplicationCommandData>]
+      if (fs.existsSync(join(__dirname, `../../guilds/${catalog[guild]}/commands/user`)))
+        commandsToPush = [...commandsToPush, ...await nestCommands(`../../guilds/${catalog[guild]}/commands/slash`, "USER") as Array<ApplicationCommandData>]
+      guildCommands?.set(commandsToPush);
+    }
   }
 
   client.on("interactionCreate", async interaction => {
