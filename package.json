@@ -6,7 +6,7 @@
     "docker": "docker-compose up --build",
     "lint": "eslint ./src --max-warnings=0",
     "manager": "API_PORT=4100 DATABASE_URI=mongodb://root:secret@mgmt.fnsintern.de:27017/hindenburg?authSource=admin node ./build/manager",
-    "start": "node .",
+    "start": "node --unhandled-rejections=strict --enable-source-maps --stack-trace-limit=30 .",
     "watch": "tsc -w"
   },
   "dependencies": {

@@ -29,6 +29,10 @@ export default {
             ephemeral: true
         })
 
+        await interaction.deferReply({
+            ephemeral: true
+        })
+
         after += 1;
         let processing = true, amount = 0;
         while (processing) {
@@ -46,9 +50,8 @@ export default {
             amount += 1
         }
 
-        interaction.reply({
-            content: ":white_check_mark: Purged " + amount + " messages.",
-            ephemeral: true
+        interaction.editReply({
+            content: ":white_check_mark: Purged " + amount + " messages."
         })
     }
 } as SlashCommand

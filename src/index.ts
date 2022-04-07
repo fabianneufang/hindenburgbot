@@ -13,6 +13,8 @@ import messageCommandHandler from "./handlers/messageCommands";
 import { postStats } from "./utils/cluster/stats";
 import prepareGuild from "./handlers/prepareGuild";
 import {redis} from "./redis";
+import {asyncImport} from "./utils/import";
+import guildHandler from "./handlers/guildHandler";
 
 const client = new Client({
   partials: ["USER", "CHANNEL", "GUILD_MEMBER", "MESSAGE", "REACTION"],
@@ -32,14 +34,6 @@ const client = new Client({
   shardCount: config.cluster.shardCount,
 });
 
-redis.subscribe("test", (err, msg) => {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log(msg)
-  }
-})
-
 redis.on("message", (channel, message) => {
   console.log(`Received ${message} from ${channel}`);
 });
@@ -52,6 +46,14 @@ client.once("ready", async client => {
 
   // stats
   setInterval(() => postStats(client, Boolean(disabledGuilds.size)), 10000);
+
+  redis.subscribe("test", (err, msg) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log(msg)
+    }
+  })
 
   // prepare guilds
   if (client.guilds.cache.size) {
@@ -93,6 +95,9 @@ client.once("ready", async client => {
 
   // interactions
   interactionsHandler(client).then(() => hindenburgLogger.info("Now listening to interactions."));
+
+  // guilds
+  guildHandler(client).then(() => hindenburgLogger.info("Initialized guild handlers."))
 });
 
 async function updatePresence() {

@@ -1,5 +1,5 @@
-import { DocumentType, getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
-import { BeAnObject } from "@typegoose/typegoose/lib/types";
+import {DocumentType, getModelForClass, prop, PropType} from "@typegoose/typegoose";
+import {BeAnObject} from "@typegoose/typegoose/lib/types";
 import {WhatIsIt} from "@typegoose/typegoose/lib/internal/constants";
 
 const saveQueue = new Map();
@@ -18,6 +18,18 @@ export class Guild {
 
   @prop({ type: [BulkRole], default: [] }, WhatIsIt.ARRAY)
   bulkRoles!: BulkRole[];
+
+  @prop({ type: String, default: "{}" })
+  private handlerDatabaseData!: string;
+
+  get handlerDatabase(): Record<string, any> {
+    return JSON.parse(this.handlerDatabaseData)
+  }
+  set handlerDatabase(val: Record<string, any>) {
+    this.handlerDatabaseData = JSON.stringify(val)
+  }
+
+
 
   // we can't save in parallell, and although we can await the guild.save(), that would not work across files.
 

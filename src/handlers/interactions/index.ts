@@ -30,12 +30,15 @@ export default async (client: Client): Promise<void> => {
     commands?.set([...await nestCommands("../../commands/slash", "CHAT_INPUT") as Array<ApplicationCommandData>, ...await nestCommands("../../commands/user", "USER") as Array<ApplicationCommandData>]);
 
     for (const guild in catalog) {
+      if (!client.guilds.cache.find(e => e.id === catalog[guild])) continue;
       const guildCommands = client.guilds.cache.get(catalog[guild])?.commands;
       let commandsToPush: (ApplicationCommandDataResolvable)[] = [];
-      if (fs.existsSync(join(__dirname, `../../guilds/${catalog[guild]}/commands/slash`)))
-        commandsToPush = [...commandsToPush, ...await nestCommands(`../../guilds/${catalog[guild]}/commands/slash`, "CHAT_INPUT") as Array<ApplicationCommandData>]
-      if (fs.existsSync(join(__dirname, `../../guilds/${catalog[guild]}/commands/user`)))
-        commandsToPush = [...commandsToPush, ...await nestCommands(`../../guilds/${catalog[guild]}/commands/slash`, "USER") as Array<ApplicationCommandData>]
+      if (fs.existsSync(join(__dirname, `../../guilds/${guild}/commands/slash`))) {
+        commandsToPush = [...commandsToPush, ...await nestCommands(`../../guilds/${guild}/commands/slash`, "CHAT_INPUT") as Array<ApplicationCommandData>]
+      }
+      if (fs.existsSync(join(__dirname, `../../guilds/${guild}/commands/user`))) {
+        commandsToPush = [...commandsToPush, ...await nestCommands(`../../guilds/${guild}/commands/slash`, "USER") as Array<ApplicationCommandData>]
+      }
       guildCommands?.set(commandsToPush);
     }
   }
@@ -69,9 +72,9 @@ function nestCommands(relativePath: string, type: string): Promise<Array<Applica
           if (file.endsWith(".js") && !file.startsWith("_")) {
 
             const { description, options }: {
-          description?: string;
-          options?: Array<ApplicationCommandOption>;
-        } = (await import(`${relativePath}/${file}`)).default;
+              description?: string;
+              options?: Array<ApplicationCommandOption>;
+            } = (await import(`${relativePath}/${file}`)).default;
 
             if (type === "USER") {
               arr.push({

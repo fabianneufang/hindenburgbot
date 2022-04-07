@@ -4,18 +4,23 @@ import { GuildDocument } from "../../database/models/Guild";
 import { SlashCommand } from "../../@types/command";
 import commandPermissions from "../../commands/slash/_permissions";
 import config from "../../config";
+import {asyncImport, requireNoFail} from "../../utils/import";
+import {join} from "path";
+import {catalog} from "../../guilds/catalog";
 
 // eslint-disable-next-line complexity
 export default async (interaction: CommandInteraction, document: GuildDocument): Promise<void> => {
   if (!interaction.guild) return;
   const commands = config.guild ? interaction.client.guilds.cache.get(config.guild)?.commands : interaction.client.application?.commands;
-  const command = commands?.cache.find(c => c.name === interaction.commandName);
+  const guildCommands = interaction.client.guilds.cache.get(interaction.guild.id)?.commands
+  const command = commands?.cache.find(c => c.name === interaction.commandName) || guildCommands?.cache.find(c => c.name === interaction.commandName);
 
   if (command) {
     const member = interaction.member && interaction.member instanceof GuildMember ? interaction.member : await interaction.guild?.members.fetch(interaction.user.id);
     const permissionLevel = member ? getPermissionLevel(member) : 0;
 
-    if (permissionLevel < ladder[commandPermissions[command.name] || "ALL"]) {
+
+    if (permissionLevel < ladder[commandPermissions[command.name] || requireNoFail(join(__dirname, `../../guilds/${Object.keys(catalog).find(key => catalog[key] === interaction.guildId)}/commands/slash/_permissions`), {})[command.name] || "ALL"]) {
       return interaction.reply({
         content: "⛔ You do not have permission to use this command.",
         ephemeral: true,
@@ -34,7 +39,10 @@ export default async (interaction: CommandInteraction, document: GuildDocument):
       }
     }
 
-    const commandFile = (await import(`../../commands/slash/${path.join("/")}`)).default as SlashCommand;
+    const commandFile =
+        (await asyncImport(join(__dirname, `../../commands/slash/${path.join("/")}`)) ||
+         await asyncImport(join(__dirname, `../../guilds/${Object.keys(catalog).find(key => catalog[key] === interaction.guildId)}/commands/slash/${path.join("/")}`)))
+            .default as SlashCommand
 
     commandFile.execute(interaction, false, getSlashArgs(interaction.options.data), document);
   }
